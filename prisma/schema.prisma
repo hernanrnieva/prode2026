@@ -1,0 +1,86 @@
+// Prisma schema for prode2026 — World Cup prediction pool.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  PLAYER
+}
+
+enum UserStatus {
+  PENDING
+  APPROVED
+}
+
+enum MatchStatus {
+  SCHEDULED
+  FINISHED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  username     String       @unique
+  passwordHash String
+  role         Role         @default(PLAYER)
+  status       UserStatus   @default(PENDING)
+  createdAt    DateTime     @default(now())
+  predictions  Prediction[]
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Match {
+  id          String       @id @default(cuid())
+  homeTeam    String
+  awayTeam    String
+  kickoffAt   DateTime
+  status      MatchStatus  @default(SCHEDULED)
+  homeScore   Int?
+  awayScore   Int?
+  createdAt   DateTime     @default(now())
+  predictions Prediction[]
+
+  @@index([kickoffAt])
+}
+
+model Prediction {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  matchId   String
+  homeScore Int
+  awayScore Int
+  points    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, matchId])
+  @@index([matchId])
+}
+
+// Single-row config holding the scoring rules. Admin-editable; rules TBD.
+model ScoringConfig {
+  id             Int      @id @default(1)
+  exactScore     Int      @default(3)
+  correctOutcome Int      @default(1)
+  updatedAt      DateTime @updatedAt
+}

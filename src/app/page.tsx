@@ -1,0 +1,44 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { getCurrentUser, isAdmin, isApproved } from "@/lib/auth";
+import { logoutAction } from "@/lib/actions/auth";
+
+export default async function HomePage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
+      <header className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Prode Linternas 2026</h1>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-gray-500">@{user.username}</span>
+          {isAdmin(user) && (
+            <Link href="/admin" className="font-medium text-blue-600 hover:underline">
+              Admin
+            </Link>
+          )}
+          <form action={logoutAction}>
+            <button className="font-medium text-gray-600 hover:underline">Salir</button>
+          </form>
+        </div>
+      </header>
+
+      {!isApproved(user) && !isAdmin(user) ? (
+        <section className="rounded-lg border border-amber-300 bg-amber-50 p-6 text-center">
+          <h2 className="text-lg font-semibold text-amber-800">Cuenta pendiente</h2>
+          <p className="mt-2 text-sm text-amber-700">
+            Tu cuenta está esperando la aprobación de un administrador. Volvé a entrar
+            más tarde.
+          </p>
+        </section>
+      ) : (
+        <section className="rounded-lg border border-gray-200 p-6">
+          <p className="text-gray-600">
+            ¡Bienvenido! Acá vas a ver los partidos y cargar tus pronósticos.
+          </p>
+        </section>
+      )}
+    </main>
+  );
+}
