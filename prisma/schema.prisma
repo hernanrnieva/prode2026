@@ -76,11 +76,3 @@ model Prediction {
   @@unique([userId, matchId])
   @@index([matchId])
 }
-
-// Single-row config holding the scoring rules. Admin-editable; rules TBD.
-model ScoringConfig {
-  id             Int      @id @default(1)
-  exactScore     Int      @default(3)
-  correctOutcome Int      @default(1)
-  updatedAt      DateTime @updatedAt
-}

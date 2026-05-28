@@ -11,7 +11,7 @@ export type ScheduledMatch = {
   finished: boolean;
   homeScore: number | null;
   awayScore: number | null;
-  prediction: { homeScore: number; awayScore: number } | null;
+  prediction: { homeScore: number; awayScore: number; points: number | null } | null;
 };
 
 function dateKey(iso: string): string {
@@ -96,6 +96,11 @@ export default function MatchSchedule({ matches }: { matches: ScheduledMatch[] }
                       {m.prediction ? (
                         <>
                           Tu pronóstico: {m.prediction.homeScore} – {m.prediction.awayScore}
+                          {m.finished && m.prediction.points !== null && (
+                            <span className="ml-2 font-medium text-blue-700">
+                              +{m.prediction.points} pts
+                            </span>
+                          )}
                         </>
                       ) : (
                         <span className="text-gray-400">Sin pronóstico</span>

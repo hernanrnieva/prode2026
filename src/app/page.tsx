@@ -17,7 +17,7 @@ export default async function HomePage() {
           include: {
             predictions: {
               where: { userId: user.id },
-              select: { homeScore: true, awayScore: true },
+              select: { homeScore: true, awayScore: true, points: true },
             },
           },
         })
@@ -39,6 +39,16 @@ export default async function HomePage() {
         <h1 className="text-xl font-bold">Prode Linternas 2026</h1>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-gray-500">@{user.username}</span>
+          {canPlay && (
+            <>
+              <Link href="/tabla" className="font-medium text-blue-600 hover:underline">
+                Tabla
+              </Link>
+              <Link href="/reglas" className="font-medium text-blue-600 hover:underline">
+                Reglas
+              </Link>
+            </>
+          )}
           {isAdmin(user) && (
             <Link href="/admin" className="font-medium text-blue-600 hover:underline">
               Admin

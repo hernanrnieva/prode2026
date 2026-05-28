@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
+import { computePoints } from "@/lib/scoring";
 
 export type MatchState = { error?: string };
 
@@ -49,7 +50,24 @@ export async function setResult(formData: FormData) {
     where: { id: matchId },
     data: { homeScore, awayScore, status: "FINISHED" },
   });
+
+  // Recompute every player's points for this match against the final score.
+  const predictions = await prisma.prediction.findMany({
+    where: { matchId },
+    select: { id: true, homeScore: true, awayScore: true },
+  });
+  await prisma.$transaction(
+    predictions.map((p) =>
+      prisma.prediction.update({
+        where: { id: p.id },
+        data: { points: computePoints(p, { homeScore, awayScore }) },
+      }),
+    ),
+  );
+
   revalidatePath("/admin/matches");
+  revalidatePath("/");
+  revalidatePath("/tabla");
 }
 
 export async function clearResult(formData: FormData) {
@@ -59,7 +77,14 @@ export async function clearResult(formData: FormData) {
     where: { id: matchId },
     data: { homeScore: null, awayScore: null, status: "SCHEDULED" },
   });
+  // Reopening a match invalidates the points it awarded.
+  await prisma.prediction.updateMany({
+    where: { matchId },
+    data: { points: null },
+  });
   revalidatePath("/admin/matches");
+  revalidatePath("/");
+  revalidatePath("/tabla");
 }
 
 export async function deleteMatch(formData: FormData) {
