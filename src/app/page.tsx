@@ -2,10 +2,36 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, isAdmin, isApproved } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions/auth";
+import { prisma } from "@/lib/prisma";
+import MatchSchedule from "@/components/MatchSchedule";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  const canPlay = isApproved(user) || isAdmin(user);
+
+  const matches = canPlay
+    ? (
+        await prisma.match.findMany({
+          orderBy: { kickoffAt: "asc" },
+          include: {
+            predictions: {
+              where: { userId: user.id },
+              select: { homeScore: true, awayScore: true },
+            },
+          },
+        })
+      ).map((m) => ({
+        id: m.id,
+        homeTeam: m.homeTeam,
+        awayTeam: m.awayTeam,
+        kickoffIso: m.kickoffAt.toISOString(),
+        finished: m.status === "FINISHED",
+        homeScore: m.homeScore,
+        awayScore: m.awayScore,
+        prediction: m.predictions[0] ?? null,
+      }))
+    : [];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
@@ -24,7 +50,7 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {!isApproved(user) && !isAdmin(user) ? (
+      {!canPlay ? (
         <section className="rounded-lg border border-amber-300 bg-amber-50 p-6 text-center">
           <h2 className="text-lg font-semibold text-amber-800">Cuenta pendiente</h2>
           <p className="mt-2 text-sm text-amber-700">
@@ -33,11 +59,7 @@ export default async function HomePage() {
           </p>
         </section>
       ) : (
-        <section className="rounded-lg border border-gray-200 p-6">
-          <p className="text-gray-600">
-            ¡Bienvenido! Acá vas a ver los partidos y cargar tus pronósticos.
-          </p>
-        </section>
+        <MatchSchedule matches={matches} />
       )}
     </main>
   );
