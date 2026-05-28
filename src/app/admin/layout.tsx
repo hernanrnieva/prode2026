@@ -18,6 +18,14 @@ export default async function AdminLayout({
           ← Volver
         </Link>
       </header>
+      <nav className="flex gap-4 border-b border-gray-200 pb-2 text-sm font-medium">
+        <Link href="/admin" className="text-gray-700 hover:text-blue-600">
+          Usuarios
+        </Link>
+        <Link href="/admin/matches" className="text-gray-700 hover:text-blue-600">
+          Partidos
+        </Link>
+      </nav>
       {children}
     </div>
   );
