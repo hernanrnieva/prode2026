@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser, isAdmin, isApproved } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
+import { dayKey, dayLabel, timeLabel } from "@/lib/dates";
 import MatchSchedule from "@/components/MatchSchedule";
 
 export default async function HomePage() {
@@ -10,6 +11,7 @@ export default async function HomePage() {
   if (!user) redirect("/login");
   const canPlay = isApproved(user) || isAdmin(user);
 
+  const now = Date.now();
   const matches = canPlay
     ? (
         await prisma.match.findMany({
@@ -25,8 +27,11 @@ export default async function HomePage() {
         id: m.id,
         homeTeam: m.homeTeam,
         awayTeam: m.awayTeam,
-        kickoffIso: m.kickoffAt.toISOString(),
+        dayKey: dayKey(m.kickoffAt),
+        dayLabel: dayLabel(m.kickoffAt),
+        timeLabel: timeLabel(m.kickoffAt),
         finished: m.status === "FINISHED",
+        locked: m.status === "FINISHED" || m.kickoffAt.getTime() <= now,
         homeScore: m.homeScore,
         awayScore: m.awayScore,
         prediction: m.predictions[0] ?? null,

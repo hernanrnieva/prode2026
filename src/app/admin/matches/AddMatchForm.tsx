@@ -10,11 +10,18 @@ export default function AddMatchForm() {
   const [kickoffLocal, setKickoffLocal] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Reset the form after a successful submission (no error, not pending).
+  // After a successful add, clear only the team names and keep the kickoff
+  // date/time — fixtures on the same day are usually loaded back to back.
   useEffect(() => {
-    if (!pending && !state.error) {
-      formRef.current?.reset();
-      setKickoffLocal("");
+    if (state.ok && !pending) {
+      const form = formRef.current;
+      if (form) {
+        const home = form.elements.namedItem("homeTeam") as HTMLInputElement | null;
+        const away = form.elements.namedItem("awayTeam") as HTMLInputElement | null;
+        if (home) home.value = "";
+        if (away) away.value = "";
+        home?.focus();
+      }
     }
   }, [state, pending]);
 

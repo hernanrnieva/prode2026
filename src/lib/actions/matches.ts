@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isAdmin } from "@/lib/auth";
 import { computePoints } from "@/lib/scoring";
 
-export type MatchState = { error?: string };
+export type MatchState = { error?: string; ok?: boolean };
 
 async function assertAdmin() {
   const user = await getCurrentUser();
@@ -32,7 +32,8 @@ export async function createMatch(
 
   await prisma.match.create({ data: { homeTeam, awayTeam, kickoffAt } });
   revalidatePath("/admin/matches");
-  return {};
+  revalidatePath("/");
+  return { ok: true };
 }
 
 export async function setResult(formData: FormData) {
