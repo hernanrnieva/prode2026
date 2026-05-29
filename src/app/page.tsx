@@ -39,36 +39,42 @@ export default async function HomePage() {
     : [];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Prode Linternas 2026</h1>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-gray-500">@{user.username}</span>
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-4 py-8">
+      <header className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo.svg" alt="" className="h-8 w-auto" />
+          <span>
+            Prode <span className="text-accent">Linternas</span> 2026
+          </span>
+        </h1>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <span className="text-muted">@{user.username}</span>
           {canPlay && (
             <>
-              <Link href="/tabla" className="font-medium text-blue-600 hover:underline">
+              <Link href="/tabla" className="font-semibold text-fg hover:text-accent">
                 Tabla
               </Link>
-              <Link href="/reglas" className="font-medium text-blue-600 hover:underline">
+              <Link href="/reglas" className="font-semibold text-fg hover:text-accent">
                 Reglas
               </Link>
             </>
           )}
           {isAdmin(user) && (
-            <Link href="/admin" className="font-medium text-blue-600 hover:underline">
+            <Link href="/admin" className="font-semibold text-fg hover:text-accent">
               Admin
             </Link>
           )}
           <form action={logoutAction}>
-            <button className="font-medium text-gray-600 hover:underline">Salir</button>
+            <button className="font-semibold text-muted hover:text-danger">Salir</button>
           </form>
         </div>
       </header>
 
       {!canPlay ? (
-        <section className="rounded-lg border border-amber-300 bg-amber-50 p-6 text-center">
-          <h2 className="text-lg font-semibold text-amber-800">Cuenta pendiente</h2>
-          <p className="mt-2 text-sm text-amber-700">
+        <section className="rounded-xl border border-accent/40 bg-accent/5 p-6 text-center">
+          <h2 className="text-lg font-bold text-accent">Cuenta pendiente</h2>
+          <p className="mt-2 text-sm text-muted">
             Tu cuenta está esperando la aprobación de un administrador. Volvé a entrar
             más tarde.
           </p>

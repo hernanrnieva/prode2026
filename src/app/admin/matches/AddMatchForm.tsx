@@ -33,21 +33,21 @@ export default function AddMatchForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4"
+      className="flex flex-col gap-3 rounded-xl border border-line bg-card p-4"
     >
-      <h3 className="font-semibold">Agregar partido</h3>
+      <h3 className="font-bold text-accent">Agregar partido</h3>
       <div className="flex flex-col gap-3 sm:flex-row">
         <input
           name="homeTeam"
           placeholder="Local"
           required
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+          className="flex-1 rounded-md border border-line bg-background px-3 py-2 text-fg outline-none placeholder:text-muted/60 focus:border-accent"
         />
         <input
           name="awayTeam"
           placeholder="Visitante"
           required
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+          className="flex-1 rounded-md border border-line bg-background px-3 py-2 text-fg outline-none placeholder:text-muted/60 focus:border-accent"
         />
       </div>
       <input
@@ -55,14 +55,14 @@ export default function AddMatchForm() {
         value={kickoffLocal}
         onChange={(e) => setKickoffLocal(e.target.value)}
         required
-        className="rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+        className="rounded-md border border-line bg-background px-3 py-2 text-fg outline-none focus:border-accent [color-scheme:dark]"
       />
       <input type="hidden" name="kickoffAt" value={kickoffIso} />
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm text-danger">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        className="self-start rounded-md bg-accent px-4 py-2 font-bold text-accent-fg hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "Agregando…" : "Agregar partido"}
       </button>

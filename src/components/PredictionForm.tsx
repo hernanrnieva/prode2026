@@ -21,7 +21,7 @@ export default function PredictionForm({
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-2">
       <input type="hidden" name="matchId" value={matchId} />
-      <label className="flex flex-col text-xs text-gray-500">
+      <label className="flex flex-col gap-1 text-xs text-muted">
         {homeTeam}
         <input
           name="homeScore"
@@ -29,11 +29,11 @@ export default function PredictionForm({
           min={0}
           defaultValue={prediction?.homeScore ?? ""}
           required
-          className="w-16 rounded-md border border-gray-300 px-2 py-1 text-base"
+          className="w-16 rounded-md border border-line bg-background px-2 py-1 text-base text-fg outline-none focus:border-accent"
         />
       </label>
-      <span className="pb-1.5 text-gray-400">–</span>
-      <label className="flex flex-col text-xs text-gray-500">
+      <span className="pb-1.5 text-muted">–</span>
+      <label className="flex flex-col gap-1 text-xs text-muted">
         {awayTeam}
         <input
           name="awayScore"
@@ -41,18 +41,18 @@ export default function PredictionForm({
           min={0}
           defaultValue={prediction?.awayScore ?? ""}
           required
-          className="w-16 rounded-md border border-gray-300 px-2 py-1 text-base"
+          className="w-16 rounded-md border border-line bg-background px-2 py-1 text-base text-fg outline-none focus:border-accent"
         />
       </label>
       <button
         disabled={pending}
-        className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        className="rounded-md bg-accent px-4 py-1.5 text-sm font-bold text-accent-fg hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "Guardando…" : prediction ? "Actualizar" : "Guardar"}
       </button>
-      {state.error && <span className="text-sm text-red-600">{state.error}</span>}
+      {state.error && <span className="text-sm text-danger">{state.error}</span>}
       {state.ok && !pending && (
-        <span className="text-sm font-medium text-green-700">Guardado ✓</span>
+        <span className="text-sm font-semibold text-accent">Guardado ✓</span>
       )}
     </form>
   );

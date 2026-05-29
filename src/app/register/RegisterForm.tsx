@@ -18,7 +18,7 @@ export default function RegisterForm() {
           required
           minLength={3}
           maxLength={30}
-          className="rounded-md border border-gray-300 px-3 py-2 text-base font-normal outline-none focus:border-blue-500"
+          className="rounded-md border border-line bg-card px-3 py-2 text-base font-normal text-fg outline-none focus:border-accent"
         />
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium">
@@ -29,14 +29,14 @@ export default function RegisterForm() {
           autoComplete="new-password"
           required
           minLength={6}
-          className="rounded-md border border-gray-300 px-3 py-2 text-base font-normal outline-none focus:border-blue-500"
+          className="rounded-md border border-line bg-card px-3 py-2 text-base font-normal text-fg outline-none focus:border-accent"
         />
       </label>
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm text-danger">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        className="rounded-md bg-accent px-4 py-2 font-bold text-accent-fg hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "Creando cuenta…" : "Crear cuenta"}
       </button>

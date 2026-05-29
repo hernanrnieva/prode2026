@@ -18,34 +18,34 @@ export default async function AdminPage() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-lg font-bold">
           Solicitudes pendientes
           {pending.length > 0 && (
-            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-sm text-amber-800">
+            <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-sm font-bold text-accent-fg">
               {pending.length}
             </span>
           )}
         </h2>
         {pending.length === 0 ? (
-          <p className="text-sm text-gray-500">No hay solicitudes pendientes.</p>
+          <p className="text-sm text-muted">No hay solicitudes pendientes.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {pending.map((u) => (
               <li
                 key={u.id}
-                className="flex items-center justify-between rounded-md border border-gray-200 px-4 py-3"
+                className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3"
               >
-                <span className="font-medium">@{u.username}</span>
+                <span className="font-semibold">@{u.username}</span>
                 <div className="flex gap-2">
                   <form action={approveUser}>
                     <input type="hidden" name="userId" value={u.id} />
-                    <button className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
+                    <button className="rounded-md bg-accent px-3 py-1.5 text-sm font-bold text-accent-fg hover:brightness-95">
                       Aprobar
                     </button>
                   </form>
                   <form action={rejectUser}>
                     <input type="hidden" name="userId" value={u.id} />
-                    <button className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
+                    <button className="rounded-md border border-danger/50 px-3 py-1.5 text-sm font-semibold text-danger hover:bg-danger/10">
                       Rechazar
                     </button>
                   </form>
@@ -57,16 +57,16 @@ export default async function AdminPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Participantes ({players.length})</h2>
+        <h2 className="text-lg font-bold">Participantes ({players.length})</h2>
         <ul className="flex flex-col gap-2">
           {players.map((u) => (
             <li
               key={u.id}
-              className="flex items-center justify-between rounded-md border border-gray-200 px-4 py-3 text-sm"
+              className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3 text-sm"
             >
-              <span className="font-medium">@{u.username}</span>
+              <span className="font-semibold">@{u.username}</span>
               {u.role === "ADMIN" && (
-                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
                   admin
                 </span>
               )}
