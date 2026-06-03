@@ -25,7 +25,8 @@ export default async function LeaderboardPage() {
   }
 
   const players = await prisma.user.findMany({
-    where: { OR: [{ status: "APPROVED" }, { role: "ADMIN" }] },
+    // Admins run the prode; they don't compete, so keep them off the table.
+    where: { status: "APPROVED", role: { not: "ADMIN" } },
     select: {
       username: true,
       predictions: {

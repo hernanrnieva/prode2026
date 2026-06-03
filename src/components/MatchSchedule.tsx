@@ -34,7 +34,7 @@ function DayGroup({ dayMatches }: { dayMatches: ScheduledMatch[] }) {
         <span className="h-1.5 w-1.5 rounded-full bg-accent" />
         {dayMatches[0].dayLabel}
       </h2>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {dayMatches.map((m) => (
           <li
             key={m.id}
