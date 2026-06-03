@@ -1,17 +1,38 @@
 import { prisma } from "@/lib/prisma";
 import { approveUser, rejectUser } from "@/lib/actions/admin";
 
+const arsFormatter = new Intl.NumberFormat("es-AR", {
+  style: "currency",
+  currency: "ARS",
+});
+
+function formatBid(cents: number): string {
+  return arsFormatter.format(cents / 100);
+}
+
 export default async function AdminPage() {
   const [pending, players] = await Promise.all([
     prisma.user.findMany({
       where: { status: "PENDING" },
       orderBy: { createdAt: "asc" },
-      select: { id: true, username: true, createdAt: true },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        entryBidCents: true,
+        createdAt: true,
+      },
     }),
     prisma.user.findMany({
       where: { status: "APPROVED" },
       orderBy: { username: "asc" },
-      select: { id: true, username: true, role: true },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        entryBidCents: true,
+        role: true,
+      },
     }),
   ]);
 
@@ -35,7 +56,17 @@ export default async function AdminPage() {
                 key={u.id}
                 className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3"
               >
-                <span className="font-semibold">{u.username}</span>
+                <span className="flex flex-col">
+                  <span className="font-semibold">{u.username}</span>
+                  {u.name && (
+                    <span className="text-xs text-muted">{u.name}</span>
+                  )}
+                  {u.entryBidCents != null && (
+                    <span className="text-xs text-muted">
+                      Inscripción esperada: {formatBid(u.entryBidCents)}
+                    </span>
+                  )}
+                </span>
                 <div className="flex gap-2">
                   <form action={approveUser}>
                     <input type="hidden" name="userId" value={u.id} />
@@ -64,7 +95,15 @@ export default async function AdminPage() {
               key={u.id}
               className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3 text-sm"
             >
-              <span className="font-semibold">{u.username}</span>
+              <span className="flex flex-col">
+                <span className="font-semibold">{u.username}</span>
+                {u.name && <span className="text-xs text-muted">{u.name}</span>}
+                {u.entryBidCents != null && (
+                  <span className="text-xs text-muted">
+                    Inscripción esperada: {formatBid(u.entryBidCents)}
+                  </span>
+                )}
+              </span>
               {u.role === "ADMIN" && (
                 <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
                   admin

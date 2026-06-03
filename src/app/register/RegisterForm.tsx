@@ -20,6 +20,43 @@ export default function RegisterForm() {
           maxLength={30}
           className="rounded-md border border-line bg-card px-3 py-2 text-base font-normal text-fg outline-none focus:border-accent"
         />
+        <span className="text-xs font-normal text-muted">
+          Este es el nombre que verán los demás en la tabla.
+        </span>
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Nombre
+        <input
+          name="name"
+          autoComplete="name"
+          required
+          minLength={2}
+          maxLength={60}
+          className="rounded-md border border-line bg-card px-3 py-2 text-base font-normal text-fg outline-none focus:border-accent"
+        />
+        <span className="text-xs font-normal text-muted">
+          Tu nombre real. Solo lo ve el administrador.
+        </span>
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        ¿Cuánto esperás pagar de inscripción?
+        <div className="flex items-center rounded-md border border-line bg-card focus-within:border-accent">
+          <span className="pl-3 text-muted">$</span>
+          <input
+            name="entryBid"
+            type="number"
+            min={0}
+            max={25000}
+            step="0.01"
+            inputMode="decimal"
+            required
+            className="w-full rounded-md bg-transparent px-2 py-2 text-base font-normal text-fg outline-none"
+          />
+          <span className="pr-3 text-xs text-muted">ARS</span>
+        </div>
+        <span className="text-xs font-normal text-muted">
+          Entre $0 y $25.000. Solo lo ve el administrador.
+        </span>
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium">
         Contraseña

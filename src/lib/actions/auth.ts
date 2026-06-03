@@ -20,7 +20,12 @@ export async function registerAction(
   formData: FormData,
 ): Promise<AuthState> {
   const username = normalizeUsername(formData.get("username"));
+  const name = String(formData.get("name") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+
+  // Expected entry payment in ARS pesos (0–25000), stored as centavos.
+  const entryBidRaw = String(formData.get("entryBid") ?? "").trim();
+  const entryBidPesos = Number(entryBidRaw);
 
   if (username.length < 3 || username.length > 30) {
     return { error: "El usuario debe tener entre 3 y 30 caracteres." };
@@ -28,6 +33,18 @@ export async function registerAction(
   if (!/^[a-z0-9_]+$/.test(username)) {
     return { error: "El usuario solo puede contener letras, números y guion bajo." };
   }
+  if (name.length < 2 || name.length > 60) {
+    return { error: "Ingresá tu nombre real (entre 2 y 60 caracteres)." };
+  }
+  if (
+    entryBidRaw === "" ||
+    !Number.isFinite(entryBidPesos) ||
+    entryBidPesos < 0 ||
+    entryBidPesos > 25000
+  ) {
+    return { error: "Ingresá un monto entre $0 y $25.000." };
+  }
+  const entryBidCents = Math.round(entryBidPesos * 100);
   if (password.length < 6) {
     return { error: "La contraseña debe tener al menos 6 caracteres." };
   }
@@ -38,7 +55,12 @@ export async function registerAction(
   }
 
   const user = await prisma.user.create({
-    data: { username, passwordHash: await hashPassword(password) },
+    data: {
+      username,
+      name,
+      entryBidCents,
+      passwordHash: await hashPassword(password),
+    },
   });
   await createSession(user.id);
 

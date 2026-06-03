@@ -28,6 +28,10 @@ enum MatchStatus {
 model User {
   id           String       @id @default(cuid())
   username     String       @unique
+  name         String?
+  // How much the player expects to pay for tournament entry, in ARS centavos
+  // (e.g. 2_500_000 = $25.000,00). Stored as integer to avoid float rounding.
+  entryBidCents Int?
   passwordHash String
   role         Role         @default(PLAYER)
   status       UserStatus   @default(PENDING)
