@@ -39,7 +39,7 @@ export default async function HomePage() {
     : [];
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-4 py-8">
+    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-8">
       <header className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -49,7 +49,7 @@ export default async function HomePage() {
           </span>
         </h1>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          <span className="text-muted">@{user.username}</span>
+          <span className="text-muted">{user.username}</span>
           {canPlay && (
             <>
               <Link href="/tabla" className="font-semibold text-fg hover:text-accent">

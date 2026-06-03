@@ -35,7 +35,7 @@ export default async function AdminPage() {
                 key={u.id}
                 className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3"
               >
-                <span className="font-semibold">@{u.username}</span>
+                <span className="font-semibold">{u.username}</span>
                 <div className="flex gap-2">
                   <form action={approveUser}>
                     <input type="hidden" name="userId" value={u.id} />
@@ -64,7 +64,7 @@ export default async function AdminPage() {
               key={u.id}
               className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3 text-sm"
             >
-              <span className="font-semibold">@{u.username}</span>
+              <span className="font-semibold">{u.username}</span>
               {u.role === "ADMIN" && (
                 <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
                   admin

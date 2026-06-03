@@ -101,7 +101,7 @@ export default async function LeaderboardPage() {
                 {i + 1}
               </td>
               <td className="py-3">
-                <span className="font-semibold">@{r.username}</span>
+                <span className="font-semibold">{r.username}</span>
                 <span className="ml-2 text-xs text-muted/60">
                   {r.played} jugados
                 </span>
