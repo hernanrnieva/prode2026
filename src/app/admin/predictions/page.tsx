@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { dayKey, dayLabel, timeLabel } from "@/lib/dates";
+import DateSelect from "./DateSelect";
 
 type AdminMatch = {
   id: string;
@@ -19,8 +20,62 @@ type AdminMatch = {
   }[];
 };
 
-export default async function AdminPredictionsPage() {
+// UTC range covering one Argentina-local day (fixed -03:00, no DST), so it
+// lines up with dayKey()'s Argentina-time grouping.
+function dayRangeUtc(key: string): { gte: Date; lt: Date } {
+  const gte = new Date(`${key}T00:00:00-03:00`);
+  const lt = new Date(gte.getTime() + 24 * 60 * 60 * 1000);
+  return { gte, lt };
+}
+
+export default async function AdminPredictionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const { date } = await searchParams;
+
+  // Lightweight pass over every match to build the date picker.
+  const all = await prisma.match.findMany({
+    orderBy: { kickoffAt: "asc" },
+    select: { kickoffAt: true, status: true },
+  });
+
+  if (all.length === 0) {
+    return <p className="text-sm text-muted">Todavía no hay partidos cargados.</p>;
+  }
+
+  const dayMap = new Map<
+    string,
+    { key: string; label: string; count: number; hasUpcoming: boolean }
+  >();
+  for (const m of all) {
+    const key = dayKey(m.kickoffAt);
+    const entry = dayMap.get(key);
+    if (entry) {
+      entry.count += 1;
+      if (m.status !== "FINISHED") entry.hasUpcoming = true;
+    } else {
+      dayMap.set(key, {
+        key,
+        label: dayLabel(m.kickoffAt),
+        count: 1,
+        hasUpcoming: m.status !== "FINISHED",
+      });
+    }
+  }
+  const days = [...dayMap.values()];
+
+  // Default to the requested day, else the soonest day with a pending match,
+  // else the most recent day.
+  const selected =
+    (date && dayMap.has(date) && date) ||
+    days.find((d) => d.hasUpcoming)?.key ||
+    days[days.length - 1].key;
+
+  const { gte, lt } = dayRangeUtc(selected);
   const rows = await prisma.match.findMany({
+    where: { kickoffAt: { gte, lt } },
     orderBy: { kickoffAt: "asc" },
     select: {
       id: true,
@@ -67,89 +122,72 @@ export default async function AdminPredictionsPage() {
       ),
   }));
 
-  // Group by day (ascending input → ascending within day), then show newest
-  // day first.
-  const groups = new Map<string, AdminMatch[]>();
-  for (const m of matches) {
-    const key = dayKey(m.kickoffAt);
-    const list = groups.get(key);
-    if (list) list.push(m);
-    else groups.set(key, [m]);
-  }
-  const dayGroups = [...groups.values()].reverse();
-
-  if (matches.length === 0) {
-    return <p className="text-sm text-muted">Todavía no hay partidos cargados.</p>;
-  }
-
   return (
-    <section className="flex flex-col gap-8">
-      {dayGroups.map((dayMatches) => (
-        <section key={dayKey(dayMatches[0].kickoffAt)} className="flex flex-col gap-3">
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-accent">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            {dayLabel(dayMatches[0].kickoffAt)}
-          </h2>
+    <section className="flex flex-col gap-5">
+      <DateSelect
+        days={days.map((d) => ({ key: d.key, label: d.label, count: d.count }))}
+        selected={selected}
+      />
 
-          {dayMatches.map((m) => (
-            <div
-              key={m.id}
-              className="flex flex-col gap-3 rounded-xl border border-line bg-card p-4"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold">
-                  {m.homeTeam} <span className="text-muted">vs</span> {m.awayTeam}
-                </span>
-                <span className="text-right text-xs text-muted">
-                  <span className="block tabular-nums">{timeLabel(m.kickoffAt)}</span>
-                  {m.finished && (
-                    <span className="font-semibold text-accent">
-                      Final: {m.homeScore} – {m.awayScore}
-                    </span>
-                  )}
-                </span>
-              </div>
+      <div className="flex flex-col gap-3">
+        {matches.map((m) => (
+          <div
+            key={m.id}
+            className="flex flex-col gap-3 rounded-xl border border-line bg-card p-4"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold">
+                {m.homeTeam} <span className="text-muted">vs</span> {m.awayTeam}
+              </span>
+              <span className="text-right text-xs text-muted">
+                <span className="block tabular-nums">{timeLabel(m.kickoffAt)}</span>
+                {m.finished && (
+                  <span className="font-semibold text-accent">
+                    Final: {m.homeScore} – {m.awayScore}
+                  </span>
+                )}
+              </span>
+            </div>
 
-              {m.preds.length === 0 ? (
-                <p className="text-sm text-muted/60">Sin pronósticos.</p>
-              ) : (
-                <ul className="flex flex-col gap-1.5 text-sm">
-                  {m.preds.map((p) => (
-                    <li
-                      key={p.username}
-                      className="flex items-center justify-between gap-2"
-                    >
-                      <span className="flex flex-col">
-                        <span className="text-fg">
-                          {p.username}
-                          {p.auto && (
-                            <span className="ml-1.5 text-xs text-muted/50">
-                              (sin pronóstico)
-                            </span>
-                          )}
-                        </span>
-                        {p.name && (
-                          <span className="text-xs text-muted/60">{p.name}</span>
-                        )}
-                      </span>
-                      <span className="flex items-center gap-2 tabular-nums">
-                        <span className="font-semibold text-fg">
-                          {p.homeScore} – {p.awayScore}
-                        </span>
-                        {p.points != null && (
-                          <span className="w-12 rounded-full bg-accent/15 px-2 py-0.5 text-center text-xs font-bold text-accent">
-                            +{p.points}
+            {m.preds.length === 0 ? (
+              <p className="text-sm text-muted/60">Sin pronósticos.</p>
+            ) : (
+              <ul className="flex flex-col gap-1.5 text-sm">
+                {m.preds.map((p) => (
+                  <li
+                    key={p.username}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span className="flex flex-col">
+                      <span className="text-fg">
+                        {p.username}
+                        {p.auto && (
+                          <span className="ml-1.5 text-xs text-muted/50">
+                            (sin pronóstico)
                           </span>
                         )}
                       </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </section>
-      ))}
+                      {p.name && (
+                        <span className="text-xs text-muted/60">{p.name}</span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-2 tabular-nums">
+                      <span className="font-semibold text-fg">
+                        {p.homeScore} – {p.awayScore}
+                      </span>
+                      {p.points != null && (
+                        <span className="w-12 rounded-full bg-accent/15 px-2 py-0.5 text-center text-xs font-bold text-accent">
+                          +{p.points}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
