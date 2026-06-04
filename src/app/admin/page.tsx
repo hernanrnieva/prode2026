@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { approveUser, rejectUser } from "@/lib/actions/admin";
+import ResetPasswordForm from "./ResetPasswordForm";
 
 const arsFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -104,11 +105,14 @@ export default async function AdminPage() {
                   </span>
                 )}
               </span>
-              {u.role === "ADMIN" && (
-                <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
-                  admin
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {u.role === "ADMIN" && (
+                  <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
+                    admin
+                  </span>
+                )}
+                <ResetPasswordForm userId={u.id} />
+              </div>
             </li>
           ))}
         </ul>
