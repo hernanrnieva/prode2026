@@ -47,10 +47,41 @@ export async function setResult(formData: FormData) {
     throw new Error("Resultado inválido.");
   }
 
-  await prisma.match.update({
+  const match = await prisma.match.update({
     where: { id: matchId },
     data: { homeScore, awayScore, status: "FINISHED" },
+    select: { kickoffAt: true },
   });
+
+  // Players who never predicted are defaulted to 0-0. Only those who existed
+  // before kickoff get a default — nobody is penalized for a match played
+  // before they joined.
+  const eligible = await prisma.user.findMany({
+    where: {
+      status: "APPROVED",
+      role: { not: "ADMIN" },
+      createdAt: { lte: match.kickoffAt },
+    },
+    select: { id: true },
+  });
+  const existing = await prisma.prediction.findMany({
+    where: { matchId },
+    select: { userId: true },
+  });
+  const predicted = new Set(existing.map((p) => p.userId));
+  const missing = eligible.filter((u) => !predicted.has(u.id));
+  if (missing.length > 0) {
+    await prisma.prediction.createMany({
+      data: missing.map((u) => ({
+        userId: u.id,
+        matchId,
+        homeScore: 0,
+        awayScore: 0,
+        auto: true,
+      })),
+      skipDuplicates: true,
+    });
+  }
 
   // Recompute every player's points for this match against the final score.
   const predictions = await prisma.prediction.findMany({
@@ -67,6 +98,7 @@ export async function setResult(formData: FormData) {
   );
 
   revalidatePath("/admin/matches");
+  revalidatePath("/admin/predictions");
   revalidatePath("/");
   revalidatePath("/tabla");
 }
@@ -78,12 +110,15 @@ export async function clearResult(formData: FormData) {
     where: { id: matchId },
     data: { homeScore: null, awayScore: null, status: "SCHEDULED" },
   });
-  // Reopening a match invalidates the points it awarded.
+  // Reopening a match undoes the 0-0 defaults entirely and invalidates the
+  // points awarded to real predictions.
+  await prisma.prediction.deleteMany({ where: { matchId, auto: true } });
   await prisma.prediction.updateMany({
     where: { matchId },
     data: { points: null },
   });
   revalidatePath("/admin/matches");
+  revalidatePath("/admin/predictions");
   revalidatePath("/");
   revalidatePath("/tabla");
 }

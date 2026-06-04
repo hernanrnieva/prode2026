@@ -13,7 +13,12 @@ export type ScheduledMatch = {
   locked: boolean;
   homeScore: number | null;
   awayScore: number | null;
-  prediction: { homeScore: number; awayScore: number; points: number | null } | null;
+  prediction: {
+    homeScore: number;
+    awayScore: number;
+    points: number | null;
+    auto: boolean;
+  } | null;
 };
 
 // Group a pre-sorted list into per-day buckets, preserving order.
@@ -55,12 +60,22 @@ function DayGroup({ dayMatches }: { dayMatches: ScheduledMatch[] }) {
 
             {m.locked ? (
               <span className="text-sm text-muted">
-                {m.prediction ? (
+                {m.prediction && !m.prediction.auto ? (
                   <>
                     Tu pronóstico:{" "}
                     <span className="font-semibold text-fg">
                       {m.prediction.homeScore} – {m.prediction.awayScore}
                     </span>
+                    {m.finished && m.prediction.points !== null && (
+                      <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
+                        +{m.prediction.points} pts
+                      </span>
+                    )}
+                  </>
+                ) : m.prediction && m.prediction.auto ? (
+                  <>
+                    <span className="text-muted/60">Sin pronóstico</span>{" "}
+                    <span className="text-fg">· 0 – 0 automático</span>
                     {m.finished && m.prediction.points !== null && (
                       <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-bold text-accent">
                         +{m.prediction.points} pts

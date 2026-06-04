@@ -19,7 +19,7 @@ export default async function HomePage() {
           include: {
             predictions: {
               where: { userId: user.id },
-              select: { homeScore: true, awayScore: true, points: true },
+              select: { homeScore: true, awayScore: true, points: true, auto: true },
             },
           },
         })

@@ -28,6 +28,7 @@ export default async function LeaderboardPage() {
           homeScore: true,
           awayScore: true,
           points: true,
+          auto: true,
           user: { select: { username: true } },
         },
       },
@@ -60,6 +61,7 @@ export default async function LeaderboardPage() {
           homeScore: p.homeScore,
           awayScore: p.awayScore,
           points: p.points ?? 0,
+          auto: p.auto,
         }))
         .sort(
           (a, b) => b.points - a.points || a.username.localeCompare(b.username),
@@ -74,6 +76,7 @@ export default async function LeaderboardPage() {
       predictions: {
         select: {
           points: true,
+          auto: true,
           match: { select: { kickoffAt: true, status: true } },
         },
       },
@@ -88,7 +91,8 @@ export default async function LeaderboardPage() {
       for (const pred of p.predictions) {
         if (pred.points === null) continue;
         total += pred.points;
-        played += 1;
+        // Auto 0-0 defaults count for points but aren't a real "played" match.
+        if (!pred.auto) played += 1;
         if (
           lastDayKey &&
           pred.match.status === "FINISHED" &&
@@ -190,9 +194,18 @@ export default async function LeaderboardPage() {
                       key={p.username}
                       className="flex items-center justify-between gap-2"
                     >
-                      <span className="text-muted">{p.username}</span>
+                      <span className="text-muted">
+                        {p.username}
+                        {p.auto && (
+                          <span className="ml-1.5 text-xs text-muted/50">
+                            (sin pronóstico)
+                          </span>
+                        )}
+                      </span>
                       <span className="flex items-center gap-2 tabular-nums">
-                        <span className="font-semibold text-fg">
+                        <span
+                          className={`font-semibold ${p.auto ? "text-muted" : "text-fg"}`}
+                        >
                           {p.homeScore} – {p.awayScore}
                         </span>
                         <span className="w-12 rounded-full bg-accent/15 px-2 py-0.5 text-center text-xs font-bold text-accent">

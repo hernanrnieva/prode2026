@@ -74,6 +74,9 @@ model Prediction {
   homeScore Int
   awayScore Int
   points    Int?
+  // True when the system filled in a 0-0 default because the player never
+  // submitted a prediction before kickoff (applied at scoring time).
+  auto      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

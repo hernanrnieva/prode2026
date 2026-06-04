@@ -15,6 +15,7 @@ type AdminMatch = {
     homeScore: number;
     awayScore: number;
     points: number | null;
+    auto: boolean;
   }[];
 };
 
@@ -35,6 +36,7 @@ export default async function AdminPredictionsPage() {
           homeScore: true,
           awayScore: true,
           points: true,
+          auto: true,
           user: { select: { username: true, name: true } },
         },
       },
@@ -56,6 +58,7 @@ export default async function AdminPredictionsPage() {
         homeScore: p.homeScore,
         awayScore: p.awayScore,
         points: p.points,
+        auto: p.auto,
       }))
       .sort(
         (a, b) =>
@@ -117,7 +120,14 @@ export default async function AdminPredictionsPage() {
                       className="flex items-center justify-between gap-2"
                     >
                       <span className="flex flex-col">
-                        <span className="text-fg">{p.username}</span>
+                        <span className="text-fg">
+                          {p.username}
+                          {p.auto && (
+                            <span className="ml-1.5 text-xs text-muted/50">
+                              (sin pronóstico)
+                            </span>
+                          )}
+                        </span>
                         {p.name && (
                           <span className="text-xs text-muted/60">{p.name}</span>
                         )}

@@ -42,8 +42,8 @@ export async function savePrediction(
 
   await prisma.prediction.upsert({
     where: { userId_matchId: { userId: user.id, matchId } },
-    create: { userId: user.id, matchId, homeScore, awayScore },
-    update: { homeScore, awayScore },
+    create: { userId: user.id, matchId, homeScore, awayScore, auto: false },
+    update: { homeScore, awayScore, auto: false },
   });
   revalidatePath("/");
   return { ok: true };
