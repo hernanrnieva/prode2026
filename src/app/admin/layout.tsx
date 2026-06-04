@@ -27,6 +27,9 @@ export default async function AdminLayout({
         <Link href="/admin/matches" className="text-muted hover:text-accent">
           Partidos
         </Link>
+        <Link href="/admin/predictions" className="text-muted hover:text-accent">
+          Pronósticos
+        </Link>
       </nav>
       {children}
     </div>

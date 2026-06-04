@@ -9,11 +9,32 @@ export default async function LeaderboardPage() {
   if (!user) redirect("/login");
   if (!isApproved(user) && !isAdmin(user)) redirect("/");
 
-  // Most recent match-day (Argentina time) that has a finished match.
+  // Finished matches with everyone's predictions. Safe to expose because the
+  // match is over — revealing locked predictions can't help anyone cheat.
   const finishedMatches = await prisma.match.findMany({
     where: { status: "FINISHED" },
-    select: { kickoffAt: true },
+    orderBy: { kickoffAt: "asc" },
+    select: {
+      id: true,
+      homeTeam: true,
+      awayTeam: true,
+      kickoffAt: true,
+      homeScore: true,
+      awayScore: true,
+      predictions: {
+        // Admins run the prode and don't compete — keep them out of the view.
+        where: { user: { role: { not: "ADMIN" } } },
+        select: {
+          homeScore: true,
+          awayScore: true,
+          points: true,
+          user: { select: { username: true } },
+        },
+      },
+    },
   });
+
+  // Most recent match-day (Argentina time) that has a finished match.
   let lastDayKey: string | null = null;
   let lastDayLabel = "";
   for (const m of finishedMatches) {
@@ -23,6 +44,27 @@ export default async function LeaderboardPage() {
       lastDayLabel = dayLabel(m.kickoffAt);
     }
   }
+
+  // Detail for the last finished day: each match + every player's prediction.
+  const lastDayMatches = finishedMatches
+    .filter((m) => lastDayKey && dayKey(m.kickoffAt) === lastDayKey)
+    .map((m) => ({
+      id: m.id,
+      homeTeam: m.homeTeam,
+      awayTeam: m.awayTeam,
+      homeScore: m.homeScore,
+      awayScore: m.awayScore,
+      preds: [...m.predictions]
+        .map((p) => ({
+          username: p.user.username,
+          homeScore: p.homeScore,
+          awayScore: p.awayScore,
+          points: p.points ?? 0,
+        }))
+        .sort(
+          (a, b) => b.points - a.points || a.username.localeCompare(b.username),
+        ),
+    }));
 
   const players = await prisma.user.findMany({
     // Admins run the prode; they don't compete, so keep them off the table.
@@ -119,6 +161,52 @@ export default async function LeaderboardPage() {
           ))}
         </tbody>
       </table>
+
+      {lastDayKey && lastDayMatches.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-lg font-bold">Pronósticos de la última fecha</h2>
+            <p className="text-sm text-muted">{lastDayLabel}</p>
+          </div>
+          {lastDayMatches.map((m) => (
+            <div
+              key={m.id}
+              className="flex flex-col gap-3 rounded-xl border border-line bg-card p-4"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold">
+                  {m.homeTeam} <span className="text-muted">vs</span> {m.awayTeam}
+                </span>
+                <span className="text-xs font-semibold text-accent">
+                  Final: {m.homeScore} – {m.awayScore}
+                </span>
+              </div>
+              {m.preds.length === 0 ? (
+                <p className="text-sm text-muted/60">Nadie pronosticó este partido.</p>
+              ) : (
+                <ul className="flex flex-col gap-1.5 text-sm">
+                  {m.preds.map((p) => (
+                    <li
+                      key={p.username}
+                      className="flex items-center justify-between gap-2"
+                    >
+                      <span className="text-muted">{p.username}</span>
+                      <span className="flex items-center gap-2 tabular-nums">
+                        <span className="font-semibold text-fg">
+                          {p.homeScore} – {p.awayScore}
+                        </span>
+                        <span className="w-12 rounded-full bg-accent/15 px-2 py-0.5 text-center text-xs font-bold text-accent">
+                          +{p.points}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
     </main>
   );
 }
