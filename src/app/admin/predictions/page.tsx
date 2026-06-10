@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { dayKey, dayLabel, timeLabel } from "@/lib/dates";
 import DateSelect from "./DateSelect";
 import SummaryEditor from "./SummaryEditor";
+import RoastExport from "./RoastExport";
 
 type AdminMatch = {
   id: string;
@@ -128,6 +129,21 @@ export default async function AdminPredictionsPage({
       ),
   }));
 
+  // Paste-ready dump of the day for writing the roast: match + result, then
+  // each player's pick (no-shows flagged).
+  const roastText = matches
+    .map((m) => {
+      const head = m.finished
+        ? `${m.homeTeam} vs ${m.awayTeam} — Resultado: ${m.homeScore} – ${m.awayScore}`
+        : `${m.homeTeam} vs ${m.awayTeam} — (sin resultado todavía)`;
+      const lines = m.preds.map(
+        (p) =>
+          `${p.username}${p.auto ? " (sin pronóstico)" : ""}\n${p.homeScore} – ${p.awayScore}`,
+      );
+      return [head, ...(lines.length ? lines : ["(nadie pronosticó)"])].join("\n");
+    })
+    .join("\n\n");
+
   return (
     <section className="flex flex-col gap-5">
       <DateSelect
@@ -140,6 +156,8 @@ export default async function AdminPredictionsPage({
         dayKey={selected}
         initialBody={summary?.body ?? ""}
       />
+
+      <RoastExport key={`export-${selected}`} text={roastText} />
 
       <div className="flex flex-col gap-3">
         {matches.map((m) => (
