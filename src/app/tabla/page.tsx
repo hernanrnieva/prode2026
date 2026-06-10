@@ -83,6 +83,15 @@ export default async function LeaderboardPage() {
     },
   });
 
+  // Latest admin-written match-day recap. Stays up until a newer one is added.
+  const latestSummary = await prisma.daySummary.findFirst({
+    orderBy: { dayKey: "desc" },
+    select: { dayKey: true, body: true },
+  });
+  const summaryLabel = latestSummary
+    ? dayLabel(new Date(`${latestSummary.dayKey}T12:00:00-03:00`))
+    : "";
+
   const rows = players
     .map((p) => {
       let total = 0;
@@ -177,6 +186,20 @@ export default async function LeaderboardPage() {
           })}
         </tbody>
       </table>
+
+      {latestSummary && (
+        <section className="flex flex-col gap-2 rounded-xl border border-accent/30 bg-accent/5 p-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-accent">
+            Resumen de la fecha · {summaryLabel}
+          </h2>
+          <p className="whitespace-pre-line text-sm text-fg">
+            {latestSummary.body}
+          </p>
+          <p className="text-right text-xs italic text-muted">
+            — Claude, su cronista artificial de confianza 😏🔦
+          </p>
+        </section>
+      )}
 
       {lastDayKey && lastDayMatches.length > 0 && (
         <section className="flex flex-col gap-4">

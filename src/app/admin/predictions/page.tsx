@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { dayKey, dayLabel, timeLabel } from "@/lib/dates";
 import DateSelect from "./DateSelect";
+import SummaryEditor from "./SummaryEditor";
 
 type AdminMatch = {
   id: string;
@@ -73,6 +74,11 @@ export default async function AdminPredictionsPage({
     days.find((d) => d.hasUpcoming)?.key ||
     days[days.length - 1].key;
 
+  const summary = await prisma.daySummary.findUnique({
+    where: { dayKey: selected },
+    select: { body: true },
+  });
+
   const { gte, lt } = dayRangeUtc(selected);
   const rows = await prisma.match.findMany({
     where: { kickoffAt: { gte, lt } },
@@ -127,6 +133,12 @@ export default async function AdminPredictionsPage({
       <DateSelect
         days={days.map((d) => ({ key: d.key, label: d.label, count: d.count }))}
         selected={selected}
+      />
+
+      <SummaryEditor
+        key={selected}
+        dayKey={selected}
+        initialBody={summary?.body ?? ""}
       />
 
       <div className="flex flex-col gap-3">

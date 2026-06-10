@@ -53,3 +53,31 @@ export async function setUserPassword(
   revalidatePath("/admin");
   return { ok: true };
 }
+
+export async function setDaySummary(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  await assertAdmin();
+  const dayKey = String(formData.get("dayKey") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) {
+    return { error: "Fecha inválida." };
+  }
+
+  if (body === "") {
+    // Empty body clears the recap for that day.
+    await prisma.daySummary.deleteMany({ where: { dayKey } });
+  } else {
+    await prisma.daySummary.upsert({
+      where: { dayKey },
+      create: { dayKey, body },
+      update: { body },
+    });
+  }
+
+  revalidatePath("/admin/predictions");
+  revalidatePath("/tabla");
+  return { ok: true };
+}
