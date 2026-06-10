@@ -116,53 +116,65 @@ export default async function LeaderboardPage() {
         </Link>
       </header>
 
-      <table className="w-full text-sm">
+      <table className="w-full border-separate border-spacing-y-1 text-sm">
         <thead>
-          <tr className="border-b border-line text-left text-muted">
-            <th className="w-8 py-2 font-semibold">#</th>
+          <tr className="text-left text-muted">
+            <th className="w-8 py-2 pl-4 font-semibold">#</th>
             <th className="py-2 font-semibold">Jugador</th>
             {lastDayKey && (
-              <th className="py-2 text-right font-semibold">
+              <th className="py-2 pr-2 text-right font-semibold">
                 Última fecha
                 <span className="block text-xs font-normal normal-case text-muted/60">
                   {lastDayLabel}
                 </span>
               </th>
             )}
-            <th className="py-2 text-right font-semibold">Total</th>
+            <th className="py-2 pr-4 text-right font-semibold">Total</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr
-              key={r.username}
-              className={`border-b border-line/60 ${
-                r.username === user.username ? "bg-accent/5" : ""
-              }`}
-            >
-              <td
-                className={`py-3 font-bold tabular-nums ${
-                  i === 0 ? "text-accent" : "text-muted"
-                }`}
-              >
-                {i + 1}
-              </td>
-              <td className="py-3">
-                <span className="font-semibold">{r.username}</span>
-                <span className="ml-2 text-xs text-muted/60">
-                  {r.played} jugados
-                </span>
-              </td>
-              {lastDayKey && (
-                <td className="py-3 text-right tabular-nums text-muted">
-                  {r.lastDay > 0 ? `+${r.lastDay}` : "—"}
+          {rows.map((r, i) => {
+            const isMe = r.username === user.username;
+            const hi = isMe ? "bg-accent/10" : "";
+            // Podium gets larger type, tapering 1 → 2 → 3; everyone else equal.
+            const size =
+              i === 0
+                ? "text-2xl"
+                : i === 1
+                  ? "text-xl"
+                  : i === 2
+                    ? "text-lg"
+                    : "text-sm";
+            return (
+              <tr key={r.username} className={size}>
+                <td
+                  className={`rounded-l-lg py-3 pl-4 pr-2 font-bold tabular-nums ${
+                    i === 0 ? "text-accent" : "text-muted"
+                  } ${hi}`}
+                >
+                  {i + 1}
                 </td>
-              )}
-              <td className="py-3 text-right font-bold tabular-nums text-accent">
-                {r.total}
-              </td>
-            </tr>
-          ))}
+                <td className={`py-3 ${hi}`}>
+                  <span className="font-semibold">{r.username}</span>
+                  <span className="ml-2 text-xs text-muted/60">
+                    {r.played} jugados
+                  </span>
+                </td>
+                {lastDayKey && (
+                  <td
+                    className={`py-3 pr-2 text-right tabular-nums text-muted ${hi}`}
+                  >
+                    {r.lastDay > 0 ? `+${r.lastDay}` : "—"}
+                  </td>
+                )}
+                <td
+                  className={`rounded-r-lg py-3 pl-2 pr-4 text-right font-bold tabular-nums text-accent ${hi}`}
+                >
+                  {r.total}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
