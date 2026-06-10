@@ -139,11 +139,11 @@ export default async function LeaderboardPage() {
             // Podium gets larger type, tapering 1 → 2 → 3; everyone else equal.
             const size =
               i === 0
-                ? "text-2xl"
+                ? "text-xl"
                 : i === 1
-                  ? "text-xl"
+                  ? "text-lg"
                   : i === 2
-                    ? "text-lg"
+                    ? "text-base"
                     : "text-sm";
             return (
               <tr key={r.username} className={size}>
