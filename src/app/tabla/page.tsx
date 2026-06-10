@@ -125,6 +125,20 @@ export default async function LeaderboardPage() {
         </Link>
       </header>
 
+      {latestSummary && (
+        <section className="flex flex-col gap-2 rounded-xl border border-accent/30 bg-accent/5 p-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-accent">
+            Resumen de la fecha · {summaryLabel}
+          </h2>
+          <p className="whitespace-pre-line text-sm text-fg">
+            {latestSummary.body}
+          </p>
+          <p className="text-right text-xs italic text-muted">
+            — Claude, su cronista artificial de confianza 😏🔦
+          </p>
+        </section>
+      )}
+
       <table className="w-full border-separate border-spacing-y-1 text-sm">
         <thead>
           <tr className="text-left text-muted">
@@ -186,20 +200,6 @@ export default async function LeaderboardPage() {
           })}
         </tbody>
       </table>
-
-      {latestSummary && (
-        <section className="flex flex-col gap-2 rounded-xl border border-accent/30 bg-accent/5 p-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-accent">
-            Resumen de la fecha · {summaryLabel}
-          </h2>
-          <p className="whitespace-pre-line text-sm text-fg">
-            {latestSummary.body}
-          </p>
-          <p className="text-right text-xs italic text-muted">
-            — Claude, su cronista artificial de confianza 😏🔦
-          </p>
-        </section>
-      )}
 
       {lastDayKey && lastDayMatches.length > 0 && (
         <section className="flex flex-col gap-4">
