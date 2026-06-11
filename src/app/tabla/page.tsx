@@ -144,7 +144,7 @@ export default async function LeaderboardPage() {
             <p className="whitespace-pre-line text-sm text-fg">{summaryBody}</p>
           )}
           <p className="text-right text-xs italic text-muted">
-            — Claude, su cronista artificial de confianza 😏🔦
+            — Claudio, su cronista artificial de confianza 😏🔦
           </p>
         </section>
       )}
