@@ -91,6 +91,13 @@ export default async function LeaderboardPage() {
   const summaryLabel = latestSummary
     ? dayLabel(new Date(`${latestSummary.dayKey}T12:00:00-03:00`))
     : "";
+  // First line of the recap is the title; the rest is the body.
+  const summaryTrimmed = latestSummary?.body.trim() ?? "";
+  const summaryBreak = summaryTrimmed.indexOf("\n");
+  const summaryTitle =
+    summaryBreak === -1 ? summaryTrimmed : summaryTrimmed.slice(0, summaryBreak).trim();
+  const summaryBody =
+    summaryBreak === -1 ? "" : summaryTrimmed.slice(summaryBreak + 1).trim();
 
   const rows = players
     .map((p) => {
@@ -127,12 +134,15 @@ export default async function LeaderboardPage() {
 
       {latestSummary && (
         <section className="flex flex-col gap-2 rounded-xl border border-accent/30 bg-accent/5 p-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-accent">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">
             Resumen de la fecha · {summaryLabel}
-          </h2>
-          <p className="whitespace-pre-line text-sm text-fg">
-            {latestSummary.body}
           </p>
+          <h2 className="text-lg font-extrabold tracking-tight text-accent">
+            {summaryTitle}
+          </h2>
+          {summaryBody && (
+            <p className="whitespace-pre-line text-sm text-fg">{summaryBody}</p>
+          )}
           <p className="text-right text-xs italic text-muted">
             — Claude, su cronista artificial de confianza 😏🔦
           </p>

@@ -22,13 +22,14 @@ export default function SummaryEditor({
       <input type="hidden" name="dayKey" value={dayKey} />
       <label className="text-sm font-bold text-accent">Resumen de la fecha</label>
       <p className="text-xs text-muted">
-        Recap divertido que verán todos en la tabla. Dejalo vacío para borrarlo.
+        Recap que verán todos en la tabla. La <strong>primera línea</strong> es el
+        título; lo que sigue, el cuerpo. Dejalo vacío para borrarlo.
       </p>
       <textarea
         name="body"
         defaultValue={initialBody}
-        rows={4}
-        placeholder="Escribí el resumen de la jornada…"
+        rows={5}
+        placeholder={"Título de la fecha\n\nResumen de la jornada…"}
         className="resize-y rounded-md border border-line bg-background px-3 py-2 text-sm text-fg outline-none placeholder:text-muted/50 focus:border-accent"
       />
       <div className="flex items-center gap-3">
