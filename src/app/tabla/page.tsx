@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getCurrentUser, isAdmin, isApproved } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey, dayLabel } from "@/lib/dates";
+import { basePoints, extraPoints, isExactScore } from "@/lib/scoring";
+import Leaderboard from "@/components/Leaderboard";
 
 export default async function LeaderboardPage() {
   const user = await getCurrentUser();
@@ -77,7 +79,16 @@ export default async function LeaderboardPage() {
         select: {
           points: true,
           auto: true,
-          match: { select: { kickoffAt: true, status: true } },
+          homeScore: true,
+          awayScore: true,
+          match: {
+            select: {
+              kickoffAt: true,
+              status: true,
+              homeScore: true,
+              awayScore: true,
+            },
+          },
         },
       },
     },
@@ -99,14 +110,24 @@ export default async function LeaderboardPage() {
   const summaryBody =
     summaryBreak === -1 ? "" : summaryTrimmed.slice(summaryBreak + 1).trim();
 
-  const rows = players
+  const sorted = players
     .map((p) => {
       let total = 0;
+      let base = 0;
+      let extra = 0;
+      let exact = 0;
       let lastDay = 0;
       let played = 0;
       for (const pred of p.predictions) {
         if (pred.points === null) continue;
+        const actual = {
+          homeScore: pred.match.homeScore ?? 0,
+          awayScore: pred.match.awayScore ?? 0,
+        };
         total += pred.points;
+        base += basePoints(pred, actual);
+        extra += extraPoints(pred, actual);
+        if (isExactScore(pred, actual)) exact += 1;
         // Auto 0-0 defaults count for points but aren't a real "played" match.
         if (!pred.auto) played += 1;
         if (
@@ -117,9 +138,31 @@ export default async function LeaderboardPage() {
           lastDay += pred.points;
         }
       }
-      return { username: p.username, total, lastDay, played };
+      return { username: p.username, total, base, extra, exact, lastDay, played };
     })
-    .sort((a, b) => b.total - a.total || a.username.localeCompare(b.username));
+    // Tiebreaker hierarchy: total → exact scores → base points. Anyone still
+    // even genuinely ties (shared rank); username only sets a stable order.
+    .sort(
+      (a, b) =>
+        b.total - a.total ||
+        b.exact - a.exact ||
+        b.base - a.base ||
+        a.username.localeCompare(b.username),
+    );
+
+  // Shared ranks: players even on total + exact + base get the same position
+  // number, and the next rank skips accordingly (1, 2, 2, 4…).
+  const rows: ((typeof sorted)[number] & { rank: number })[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const r = sorted[i];
+    const prev = rows[i - 1];
+    const tied =
+      prev &&
+      prev.total === r.total &&
+      prev.exact === r.exact &&
+      prev.base === r.base;
+    rows.push({ ...r, rank: tied ? prev.rank : i + 1 });
+  }
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-4 py-8">
@@ -149,67 +192,12 @@ export default async function LeaderboardPage() {
         </section>
       )}
 
-      <table className="w-full border-separate border-spacing-y-1 text-sm">
-        <thead>
-          <tr className="text-left text-muted">
-            <th className="w-8 py-2 pl-4 font-semibold">#</th>
-            <th className="py-2 font-semibold">Jugador</th>
-            {lastDayKey && (
-              <th className="py-2 pr-2 text-right font-semibold">
-                Última fecha
-                <span className="block text-xs font-normal normal-case text-muted/60">
-                  {lastDayLabel}
-                </span>
-              </th>
-            )}
-            <th className="py-2 pr-4 text-right font-semibold">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => {
-            const isMe = r.username === user.username;
-            const hi = isMe ? "bg-accent/10" : "";
-            // Podium gets larger type, tapering 1 → 2 → 3; everyone else equal.
-            const size =
-              i === 0
-                ? "text-xl"
-                : i === 1
-                  ? "text-lg"
-                  : i === 2
-                    ? "text-base"
-                    : "text-sm";
-            return (
-              <tr key={r.username} className={size}>
-                <td
-                  className={`rounded-l-lg py-3 pl-4 pr-2 font-bold tabular-nums ${
-                    i === 0 ? "text-accent" : "text-muted"
-                  } ${hi}`}
-                >
-                  {i + 1}
-                </td>
-                <td className={`py-3 ${hi}`}>
-                  <span className="font-semibold">{r.username}</span>
-                  <span className="ml-2 text-xs text-muted/60">
-                    {r.played} jugados
-                  </span>
-                </td>
-                {lastDayKey && (
-                  <td
-                    className={`py-3 pr-2 text-right tabular-nums text-muted ${hi}`}
-                  >
-                    {r.lastDay > 0 ? `+${r.lastDay}` : "—"}
-                  </td>
-                )}
-                <td
-                  className={`rounded-r-lg py-3 pl-2 pr-4 text-right font-bold tabular-nums text-accent ${hi}`}
-                >
-                  {r.total}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <Leaderboard
+        rows={rows}
+        currentUsername={user.username}
+        showLastDay={!!lastDayKey}
+        lastDayLabel={lastDayLabel}
+      />
 
       {lastDayKey && lastDayMatches.length > 0 && (
         <section className="flex flex-col gap-4">
