@@ -87,10 +87,7 @@ export default function Leaderboard({
                 <td
                   className={`rounded-r-lg py-3 pl-2 pr-4 text-right font-bold tabular-nums text-accent ${hi}`}
                 >
-                  <span className="inline-flex items-center gap-1">
-                    {r.total}
-                    <span className="text-xs text-muted">{isOpen ? "▴" : "▾"}</span>
-                  </span>
+                  {r.total}
                 </td>
               </tr>
               {isOpen && (
