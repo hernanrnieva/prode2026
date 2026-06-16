@@ -134,6 +134,33 @@ export default async function RulesPage() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-bold">Desempates</h2>
+        <p className="text-sm text-muted">
+          Si dos o más jugadores terminan con el mismo total de puntos, el
+          desempate se resuelve en este orden:
+        </p>
+        <ol className="flex list-decimal flex-col gap-2 pl-5 text-sm text-muted marker:font-bold marker:text-accent">
+          <li>
+            <strong className="text-fg">Más resultados exactos</strong>: quién
+            clavó más veces el marcador justo.
+          </li>
+          <li>
+            Si siguen iguales,{" "}
+            <strong className="text-fg">más puntos base</strong>: quién acertó más
+            resultados (ganador o empate).
+          </li>
+          <li>
+            Si aún así persiste el empate,{" "}
+            <strong className="text-fg">comparten la posición</strong> y se reparte
+            el premio en partes iguales.
+          </li>
+        </ol>
+        <p className="text-xs text-muted/70">
+          Podés ver tus exactos, base y extra tocando tu fila en la tabla.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Información general</h2>
         <ul className="flex list-disc flex-col gap-2 pl-5 text-sm text-muted marker:text-accent">
           <li>
