@@ -126,6 +126,21 @@ export async function clearResult(formData: FormData) {
 export async function deleteMatch(formData: FormData) {
   await assertAdmin();
   const matchId = String(formData.get("matchId"));
+
+  // Authoritative guard: only future matches with no predictions can be deleted,
+  // so we never wipe predictions/points by deleting a played or predicted match.
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { kickoffAt: true, _count: { select: { predictions: true } } },
+  });
+  if (!match) throw new Error("El partido no existe.");
+  if (match.kickoffAt <= new Date()) {
+    throw new Error("No se puede borrar un partido que ya empezó.");
+  }
+  if (match._count.predictions > 0) {
+    throw new Error("No se puede borrar un partido que ya tiene pronósticos.");
+  }
+
   await prisma.match.delete({ where: { id: matchId } });
   revalidatePath("/admin/matches");
 }

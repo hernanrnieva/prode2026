@@ -4,7 +4,11 @@ import AddMatchForm from "./AddMatchForm";
 import AdminMatchList from "./AdminMatchList";
 
 export default async function AdminMatchesPage() {
-  const rows = await prisma.match.findMany({ orderBy: { kickoffAt: "asc" } });
+  const now = Date.now();
+  const rows = await prisma.match.findMany({
+    orderBy: { kickoffAt: "asc" },
+    include: { _count: { select: { predictions: true } } },
+  });
   const matches = rows.map((m) => ({
     id: m.id,
     homeTeam: m.homeTeam,
@@ -15,6 +19,8 @@ export default async function AdminMatchesPage() {
     finished: m.status === "FINISHED",
     homeScore: m.homeScore,
     awayScore: m.awayScore,
+    // Only future matches that nobody has predicted yet can be deleted.
+    deletable: m.kickoffAt.getTime() > now && m._count.predictions === 0,
   }));
 
   return (

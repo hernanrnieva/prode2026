@@ -13,6 +13,7 @@ export type AdminMatch = {
   finished: boolean;
   homeScore: number | null;
   awayScore: number | null;
+  deletable: boolean;
 };
 
 export default function AdminMatchList({ matches }: { matches: AdminMatch[] }) {
@@ -111,12 +112,14 @@ export default function AdminMatchList({ matches }: { matches: AdminMatch[] }) {
                       </form>
                     )}
 
-                    <form action={deleteMatch} className="ml-auto">
-                      <input type="hidden" name="matchId" value={m.id} />
-                      <button className="rounded-md border border-danger/50 px-3 py-1.5 text-sm font-semibold text-danger hover:bg-danger/10">
-                        Eliminar
-                      </button>
-                    </form>
+                    {m.deletable && (
+                      <form action={deleteMatch} className="ml-auto">
+                        <input type="hidden" name="matchId" value={m.id} />
+                        <button className="rounded-md border border-danger/50 px-3 py-1.5 text-sm font-semibold text-danger hover:bg-danger/10">
+                          Eliminar
+                        </button>
+                      </form>
+                    )}
                   </div>
 
                   {m.finished && (
